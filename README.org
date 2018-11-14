@@ -1,0 +1,46 @@
+* ledger-import
+
+  #+BEGIN_HTML
+      <p>
+        <a href="https://stable.melpa.org/#/ledger-import">
+          <img alt="MELPA Stable" src="https://stable.melpa.org/packages/ledger-import-badge.svg"/>
+        </a>
+
+        <a href="https://melpa.org/#/ledger-import">
+          <img alt="MELPA" src="https://melpa.org/packages/ledger-import-badge.svg"/>
+        </a>
+
+        <a href="https://gitlab.petton.fr/DamienCassou/ledger-import/commits/master">
+          <img alt="pipeline status" src="https://gitlab.petton.fr/DamienCassou/ledger-import/badges/master/pipeline.svg" />
+        </a>
+      </p>
+  #+END_HTML
+
+
+** Summary
+
+The package ledger-import is an Emacs tool to import transaction data
+from your bank and convert them into the [[https://github.com/ledger/ledger][Ledger]] format.
+
+** Installing
+
+Get ledger-import from [[https://melpa.org/#/ledger-import][melpa]] or [[https://stable.melpa.org/#/ledger-import][melpa stable]]. You can also clone the git
+repository.
+
+You need to install both Boobank from the [[http://weboob.org/][weboob project]] and
+[[https://github.com/egh/ledger-autosync][ledger-autosync]]. Then you need to [[http://weboob.org/modules][configure Boobank]] with your bank
+credentials.
+
+You can find more information at the beginning of the [[file:ledger-import.el][ledger-import file]].
+
+** License
+
+See [[file:COPYING][COPYING]]. Copyright (c) 2018 Damien Cassou.
+
+  #+BEGIN_HTML
+  <a href="https://liberapay.com/DamienCassou/donate">
+    <img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg">
+  </a>
+  #+END_HTML
+
+#  LocalWords:  DamienCassou MPD minibuffer
