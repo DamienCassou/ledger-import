@@ -207,7 +207,6 @@ guess related account names."
                       ,@(when fid `("--fid" ,fid))
                       ,file)))
       (write-region nil nil file nil 'no-message)
-      (message "Starting ledger-autosync for %s" ledger-name)
       (make-process
        :name "ledger-autosync"
        :buffer (ledger-import-buffer)
