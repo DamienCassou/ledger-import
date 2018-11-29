@@ -207,7 +207,6 @@ guess related account names."
                       ,@(when fid `("--fid" ,fid))
                       ,file)))
       (write-region nil nil file nil 'no-message)
-      (message "Starting ledger-autosync for %s" ledger-name)
       (make-process
        :name "ledger-autosync"
        :buffer (ledger-import-buffer)
@@ -218,6 +217,23 @@ guess related account names."
                    (when (string-prefix-p "exited abnormally" event)
                      (pop-to-buffer-same-window (ledger-import-buffer))
                      (error "There was a problem with ledger-autosync while importing %s" ledger-name)))))))
+
+(defun ledger-import--buffer-has-ofx-data (&optional buffer)
+  "Return non-nil iff BUFFER, or current buffer, has OFX data."
+  (with-current-buffer (or buffer (current-buffer))
+    (save-excursion
+      (goto-char (point-min))
+      (and
+       (looking-at-p "OFXHEADER")
+       (search-forward "<OFX>")
+       (search-forward "</OFX>")
+       (or (= (point) (point-max))
+           (= (point) (1- (point-max))))))))
+
+(defun ledger-import--buffer-empty-p (&optional buffer)
+  "Return non-nil if BUFFER, or current buffer, is empty."
+  (with-current-buffer (or buffer (current-buffer))
+    (= (point-min) (point-max))))
 
 ;;;###autoload
 (defun ledger-import-fetch-boobank (fetcher-account &optional callback retry)
@@ -245,9 +261,11 @@ to fail often and restarting usually solves the problem."
        :command command
        :sentinel (lambda (_process event)
                    (when (string= event "finished\n")
-                     (if (not (with-current-buffer error-buffer (= (point-min) (point-max))))
+                     (if (not (ledger-import--buffer-has-ofx-data buffer))
                          (ledger-import--fetch-boobank-error retry fetcher-account callback error-buffer)
-                       (kill-buffer error-buffer)
+                       (if (ledger-import--buffer-empty-p error-buffer)
+                           (kill-buffer error-buffer)
+                         (message "ledger-import: some errors have been logged in %s" error-buffer))
                        (with-current-buffer buffer (run-hooks 'ledger-import-fetched-hook))
                        (when callback (funcall callback buffer))))
                    (when (string-prefix-p "exited abnormally" event)
