@@ -141,6 +141,19 @@ The `ledger-import-buffer' is made current before the hook is run."
   "Return the buffer containing imported transactions."
   (get-buffer-create "*ledger sync*"))
 
+(defun ledger-import--finish-import (&optional buffer)
+  "Cleanup BUFFER and run `ledger-import-finished-hook'.
+If BUFFER is nil, use `ledger-import-buffer' instead."
+  (with-current-buffer (or buffer (current-buffer))
+    (ledger-mode)
+    (ledger-mode-clean-buffer)
+    (run-hooks 'ledger-import-finished-hook)))
+
+(defun ledger-import--current-ledger-file ()
+  "Return path to ledger file in current buffer, nil if none."
+  (when (and (buffer-file-name) (derived-mode-p 'ledger-mode))
+    (buffer-file-name)))
+
 ;;;###autoload
 (defun ledger-import-pop-to-buffer (&optional buffer)
   "Make BUFFER visible, `ledger-import-buffer' if nil."
@@ -291,17 +304,19 @@ The current buffer should be in the OFX format."
       (while (re-search-forward (car pair) nil t)
         (replace-match (cdr pair) t)))))
 
+;;;###autoload
 (defun ledger-import-account (account &optional callback ledger-file)
   "Fetch and convert transactions of ACCOUNT.
 Write the result in `ledger-import-buffer' and execute CALLBACK when done.
 
-ACCOUNT is a list whose items are defined in `ledger-import-accounts'.
+ACCOUNT is a list whose items are defined in
+`ledger-import-accounts'.  Interactively, user is asked to choose
+an account from `ledger-import-accounts'.
 
 If LEDGER-FILE is non nil, use transactions from this file to
 guess related account names."
   (interactive
-   (list (ledger-import-choose-account)
-         (lambda () (ledger-import-pop-to-buffer))))
+   (list (ledger-import-choose-account) #'ledger-import--finish-import (ledger-import--current-ledger-file)))
   (ledger-import-fetch-boobank
    (ledger-import-account-fetcher-id account)
    (lambda (ofx-buffer)
@@ -337,19 +352,9 @@ Accounts are listed `ledger-import-accounts'.
 
 If LEDGER-FILE is non nil, use transactions from this file to
 guess related account names."
-  (interactive (list
-                (when (and (buffer-file-name) (derived-mode-p 'ledger-mode))
-                  (buffer-file-name))))
-  (let ((buffer (ledger-import-buffer)))
-    (with-current-buffer buffer (erase-buffer))
-    (ledger-import--accounts
-     ledger-import-accounts
-     (lambda ()
-       (with-current-buffer buffer
-         (ledger-mode)
-         (ledger-mode-clean-buffer)
-         (run-hooks 'ledger-import-finished-hook)))
-     ledger-file)))
+  (interactive (list (ledger-import--current-ledger-file)))
+  (with-current-buffer (ledger-import-buffer) (erase-buffer))
+  (ledger-import--accounts ledger-import-accounts #'ledger-import--finish-import ledger-file))
 
 (provide 'ledger-import)
 ;;; ledger-import.el ends here
