@@ -194,9 +194,10 @@ ACCOUNT is a list whose items are defined in `ledger-import-accounts'."
                                         (mapcar #'ledger-import-account-ledger-name accounts)
                                         nil
                                         t)))
-    (seq-find (lambda (account) (string= (ledger-import-account-ledger-name account)
-                                    account-name))
-              accounts)))
+    (seq-find
+     (lambda (account)
+       (string= (ledger-import-account-ledger-name account) account-name))
+     accounts)))
 
 ;;;###autoload
 (defun ledger-import-convert-ofx-to-ledger (account in-buffer &optional callback ledger-file)
