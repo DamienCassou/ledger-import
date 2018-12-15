@@ -144,7 +144,7 @@ The `ledger-import-buffer' is made current before the hook is run."
 (defun ledger-import--finish-import (&optional buffer)
   "Cleanup BUFFER and run `ledger-import-finished-hook'.
 If BUFFER is nil, use `ledger-import-buffer' instead."
-  (with-current-buffer (or buffer (current-buffer))
+  (with-current-buffer (or buffer (ledger-import-buffer))
     (ledger-mode)
     (ledger-mode-clean-buffer)
     (run-hooks 'ledger-import-finished-hook)))
