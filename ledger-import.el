@@ -338,13 +338,16 @@ ACCOUNTs is a list similar to `ledger-import-accounts'.
 
 If LEDGER-FILE is non nil, use transactions from this file to
 guess related account names."
-  (if (null accounts)
-      (when callback (funcall callback))
-    (ledger-import-account
-     (car accounts)
-     (lambda ()
-       (ledger-import--accounts (cdr accounts) callback ledger-file))
-     ledger-file)))
+  (let ((finished-count 0))
+    (dolist (account accounts)
+      (ledger-import-account
+       account
+       (lambda ()
+         (setf finished-count (1+ finished-count))
+         (when (and (equal finished-count (length accounts))
+                    callback)
+           (funcall callback)))
+       ledger-file))))
 
 ;;;###autoload
 (defun ledger-import-all-accounts (&optional ledger-file)
