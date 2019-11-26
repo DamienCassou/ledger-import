@@ -204,7 +204,7 @@ ACCOUNT is a list whose items are defined in `ledger-import-accounts'."
   "Convert ofx data for ACCOUNT in IN-BUFFER to Ledger format.
 Display result in `ledger-import-buffer' and execute CALLBACK when done.
 
-`ledger-import-autosync-command' is used to do the convertion.
+`ledger-import-autosync-command' is used to do the conversion.
 
 ACCOUNT is a list whose items are defined in `ledger-import-accounts'.
 
