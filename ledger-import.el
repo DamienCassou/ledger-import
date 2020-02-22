@@ -233,7 +233,7 @@ guess related account names."
                      (error "There was a problem with ledger-autosync while importing %s" ledger-name)))))))
 
 (defun ledger-import--buffer-has-ofx-data (&optional buffer)
-  "Return non-nil iff BUFFER, or current buffer, has OFX data."
+  "Return non-nil if BUFFER, or current buffer, has OFX data."
   (with-current-buffer (or buffer (current-buffer))
     (save-excursion
       (goto-char (point-min))
@@ -362,3 +362,5 @@ guess related account names."
 
 (provide 'ledger-import)
 ;;; ledger-import.el ends here
+
+;; LocalWords:  boobank autosync fid ofx
