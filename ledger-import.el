@@ -4,7 +4,7 @@
 
 ;; Author: Damien Cassou <damien@cassou.me>
 ;; Url: https://gitlab.petton.fr/mpdel/libmpdel
-;; Package-requires: ((emacs "25.1") (ledger-mode "3.1.1"))
+;; Package-Requires: ((emacs "25.1") (ledger-mode "3.1.1"))
 ;; Version: 1.0.0
 
 ;; This program is free software; you can redistribute it and/or modify
