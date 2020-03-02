@@ -95,7 +95,13 @@
             :tag "FID"
             :value ""
             :doc "Use only if ledger-autosync complains about missing FID"
-            :format "%t: %v%h\n"))))
+            :format "%t: %v%h\n")
+           (repeat
+            (string
+             :tag "Additional fetcher argument"
+             :value ""
+             :doc "Additional argument to pass to the fetcher"
+             :format "%t: %v%h\n")))))
 
 (defcustom ledger-import-autosync-command '("ledger-autosync" "--assertions")
   "List of strings with ledger-autosync command name and arguments."
@@ -187,6 +193,14 @@ ACCOUNT is a list whose items are defined in `ledger-import-accounts'."
     (unless (or (null fid) (string= fid ""))
       fid)))
 
+(defun ledger-import-accout-fetcher-parameters (account)
+  "Return ACCOUNT's additional parameters for the fetcher.
+
+This is a, possibly empty, list of strings.
+
+ACCOUNT is a list whose items are defined in `ledger-import-accounts'."
+  (nth 4 account))
+
 (defun ledger-import-choose-account ()
   "Ask the user to choose an account among `ledger-import-accounts'."
   (let* ((accounts ledger-import-accounts)
@@ -247,22 +261,29 @@ guess related account names."
 (defun ledger-import--buffer-empty-p (&optional buffer)
   "Return non-nil if BUFFER, or current buffer, is empty."
   (with-current-buffer (or buffer (current-buffer))
+    (setf (point) (point-min))
+    (delete-matching-lines "^[[:blank:]]*$")
+    (setf (point) (point-min))
+    (delete-matching-lines "^Process.* finished$")
     (= (point-min) (point-max))))
 
 ;;;###autoload
-(defun ledger-import-fetch-boobank (fetcher-account &optional callback retry)
+(defun ledger-import-fetch-boobank (fetcher-account &optional callback additional-parameters retry)
   "Use boobank to fetch OFX data for FETCHER-ACCOUNT, a string.
 When done, execute CALLBACK with buffer containing OFX data.
 
 RETRY is a number (default 3) indicating the number of times
 boobank is executed if it fails.  This is because boobank tends
-to fail often and restarting usually solves the problem."
+to fail often and restarting usually solves the problem.
+
+ADDITIONAL-PARAMETERS is a list of strings to pass to boobank."
   (interactive (list (ledger-import-account-fetcher-id (ledger-import-choose-account)) #'ledger-import-pop-to-buffer))
   (let ((retry (or retry 3))
         (buffer (generate-new-buffer (format "*ledger-import-%s*" fetcher-account)))
         (error-buffer (generate-new-buffer (format "*ledger-import-%s <stderr>*" fetcher-account)))
         (command `(,@ledger-import-boobank-command
                    "--formatter=ofx"
+                   ,@additional-parameters
                    "history"
                    ,fetcher-account
                    ,ledger-import-boobank-import-from-date)))
@@ -276,23 +297,25 @@ to fail often and restarting usually solves the problem."
        :sentinel (lambda (_process event)
                    (when (string= event "finished\n")
                      (if (not (ledger-import--buffer-has-ofx-data buffer))
-                         (ledger-import--fetch-boobank-error retry fetcher-account callback error-buffer)
+                         (ledger-import--fetch-boobank-error retry fetcher-account callback error-buffer additional-parameters)
                        (if (ledger-import--buffer-empty-p error-buffer)
                            (kill-buffer error-buffer)
-                         (message "ledger-import: some errors have been logged in %s" error-buffer))
+                         (message "ledger-import: some errors have been logged in %s:\n--\n%s--\n\n" error-buffer (with-current-buffer error-buffer (buffer-substring-no-properties (point-min) (point-max)))))
                        (with-current-buffer buffer (run-hooks 'ledger-import-fetched-hook))
                        (when callback (funcall callback buffer))))
                    (when (string-prefix-p "exited abnormally" event)
-                     (ledger-import--fetch-boobank-error retry fetcher-account callback error-buffer)))))))
+                     (ledger-import--fetch-boobank-error retry fetcher-account callback error-buffer additional-parameters)))))))
 
-(defun ledger-import--fetch-boobank-error (retry fetcher-account callback error-buffer)
+(defun ledger-import--fetch-boobank-error (retry fetcher-account callback error-buffer additional-parameters)
   "Throw an error if RETRY is 0 or try starting boobank again.
 
 FETCHER-ACCOUNT and CALLBACK are the same as in `ledger-import-fetch-boobank'.
 
-ERROR-BUFFER is a buffer containing an error message explaining the problem."
+ERROR-BUFFER is a buffer containing an error message explaining the problem.
+
+ADDITIONAL-PARAMETERS is a list of strings to pass to boobank."
   (if (>= retry 0)
-      (ledger-import-fetch-boobank fetcher-account callback (1- retry))
+      (ledger-import-fetch-boobank fetcher-account callback additional-parameters (1- retry))
     (pop-to-buffer-same-window error-buffer)
     (error "There was a problem with boobank while importing %s" fetcher-account)))
 
@@ -328,7 +351,8 @@ guess related account names."
         (kill-buffer ofx-buffer)
         (when callback
           (funcall callback)))
-      ledger-file))))
+      ledger-file))
+   (ledger-import-accout-fetcher-parameters account)))
 
 (defun ledger-import--accounts (accounts &optional callback ledger-file)
   "Import all of ACCOUNTS and put the result in `ledger-import-buffer'.
