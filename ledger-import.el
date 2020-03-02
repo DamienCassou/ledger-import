@@ -4,7 +4,7 @@
 
 ;; Author: Damien Cassou <damien@cassou.me>
 ;; Url: https://gitlab.petton.fr/mpdel/libmpdel
-;; Package-requires: ((emacs "25.1") (ledger-mode "3.1.1"))
+;; Package-Requires: ((emacs "25.1") (ledger-mode "3.1.1"))
 ;; Version: 1.0.0
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -233,7 +233,7 @@ guess related account names."
                      (error "There was a problem with ledger-autosync while importing %s" ledger-name)))))))
 
 (defun ledger-import--buffer-has-ofx-data (&optional buffer)
-  "Return non-nil iff BUFFER, or current buffer, has OFX data."
+  "Return non-nil if BUFFER, or current buffer, has OFX data."
   (with-current-buffer (or buffer (current-buffer))
     (save-excursion
       (goto-char (point-min))
@@ -362,3 +362,5 @@ guess related account names."
 
 (provide 'ledger-import)
 ;;; ledger-import.el ends here
+
+;; LocalWords:  boobank autosync fid ofx
