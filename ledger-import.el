@@ -283,7 +283,7 @@ to fail often and restarting usually solves the problem."
                          (ledger-import--fetch-boobank-error retry fetcher-account callback error-buffer)
                        (if (ledger-import--buffer-empty-p error-buffer)
                            (kill-buffer error-buffer)
-                         (message "ledger-import: some errors have been logged in %s" error-buffer))
+                         (message "ledger-import: some errors have been logged in %s:\n--\n%s--\n\n" error-buffer (with-current-buffer error-buffer (buffer-substring-no-properties (point-min) (point-max)))))
                        (with-current-buffer buffer (run-hooks 'ledger-import-fetched-hook))
                        (when callback (funcall callback buffer))))
                    (when (string-prefix-p "exited abnormally" event)
