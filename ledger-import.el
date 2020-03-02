@@ -247,6 +247,10 @@ guess related account names."
 (defun ledger-import--buffer-empty-p (&optional buffer)
   "Return non-nil if BUFFER, or current buffer, is empty."
   (with-current-buffer (or buffer (current-buffer))
+    (setf (point) (point-min))
+    (delete-matching-lines "^[[:blank:]]*$")
+    (setf (point) (point-min))
+    (delete-matching-lines "^Process.* finished$")
     (= (point-min) (point-max))))
 
 ;;;###autoload
