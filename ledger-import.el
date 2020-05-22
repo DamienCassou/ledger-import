@@ -279,8 +279,8 @@ to fail often and restarting usually solves the problem.
 ADDITIONAL-PARAMETERS is a list of strings to pass to boobank."
   (interactive (list (ledger-import-account-fetcher-id (ledger-import-choose-account)) #'ledger-import-pop-to-buffer))
   (let ((retry (or retry 3))
-        (buffer (generate-new-buffer (format "*ledger-import-%s*" fetcher-account)))
-        (error-buffer (generate-new-buffer (format "*ledger-import-%s <stderr>*" fetcher-account)))
+        (buffer (generate-new-buffer (format " *ledger-import-%s*" fetcher-account)))
+        (error-buffer (generate-new-buffer (format " *ledger-import-%s <stderr>*" fetcher-account)))
         (command `(,@ledger-import-boobank-command
                    "--formatter=ofx"
                    ,@additional-parameters
