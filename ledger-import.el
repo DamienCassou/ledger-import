@@ -241,8 +241,9 @@ guess related account names."
        :command command
        :sentinel (lambda (_process event)
                    (when (and callback (string= event "finished\n"))
-                     (setf (point) (point-min))
-                     (delete-matching-lines "^ERROR:root:payee lookup not implemented for HLedger, using raw payee\n")
+                     (with-current-buffer (ledger-import-buffer)
+                       (setf (point) (point-min))
+                       (delete-matching-lines "ERROR:root:payee lookup not implemented for HLedger, using raw payee"))
                      (funcall callback))
                    (when (string-prefix-p "exited abnormally" event)
                      (pop-to-buffer-same-window (ledger-import-buffer))
