@@ -23,15 +23,15 @@
 ;;; Commentary:
 
 ;; This file contains code to simplify importing new transactions into your
-;; Ledger file.  Transactions are fetched using a fetcher (only boobank from the
-;; weboob project is supported for now) and the OFX file format.  Then, the OFX
+;; Ledger file.  Transactions are fetched using a fetcher (only Bank from the
+;; woob project is supported for now) and the OFX file format.  Then, the OFX
 ;; buffers are converted into Ledger format through ledger-autosync.
 
 ;; To use ledger-import, you first have to install and configure boobank, from
-;; the weboob project:
+;; the woob project:
 ;;
-;; - http://weboob.org/
-;; - http://weboob.org/applications/boobank
+;; - https://woob.tech/
+;; - https://woob.tech/applications/bank
 ;;
 ;; When you manage to visualize your bank accounts with boobank, you should
 ;; configure each in `ledger-import-accounts'.  Use `customize-variable' to do
@@ -108,13 +108,13 @@
   :group 'ledger-import
   :type '(repeat string))
 
-(defcustom ledger-import-boobank-command '("boobank")
-  "List of strings with boobank command name and arguments."
+(defcustom ledger-import-boobank-command '("woob" "bank")
+  "List of strings with woob bank command name and arguments."
   :group 'ledger-import
   :type '(repeat string))
 
-(defcustom ledger-import-boobank-import-from-date "2019-04-01"
-  "String representing a date from which to import OFX data with boobank.
+(defcustom ledger-import-boobank-import-from-date "2021-04-01"
+  "String representing a date from which to import OFX data with woob bank.
 The format is YYYY-MM-DD."
   :group 'ledger-import
   :type '(string
@@ -179,7 +179,7 @@ ACCOUNT is a list whose items are defined in `ledger-import-accounts'."
 
 (defun ledger-import-account-fetcher-id (account)
   "Return ACCOUNT's identifier as known by the fetcher.
-For example, this is the account ID that boobank uses.
+For example, this is the account ID that woob bank uses.
 
 ACCOUNT is a list whose items are defined in `ledger-import-accounts'."
   (nth 2 account))
@@ -272,14 +272,14 @@ guess related account names."
 
 ;;;###autoload
 (defun ledger-import-fetch-boobank (fetcher-account &optional callback additional-parameters retry)
-  "Use boobank to fetch OFX data for FETCHER-ACCOUNT, a string.
+  "Use woob bank to fetch OFX data for FETCHER-ACCOUNT, a string.
 When done, execute CALLBACK with buffer containing OFX data.
 
 RETRY is a number (default 3) indicating the number of times
-boobank is executed if it fails.  This is because boobank tends
+woob bank is executed if it fails.  This is because woob bank tends
 to fail often and restarting usually solves the problem.
 
-ADDITIONAL-PARAMETERS is a list of strings to pass to boobank."
+ADDITIONAL-PARAMETERS is a list of strings to pass to woob bank."
   (interactive (list (ledger-import-account-fetcher-id (ledger-import-choose-account)) #'ledger-import-pop-to-buffer))
   (let ((retry (or retry 3))
         (buffer (generate-new-buffer (format " *ledger-import-%s*" fetcher-account)))
@@ -291,9 +291,9 @@ ADDITIONAL-PARAMETERS is a list of strings to pass to boobank."
                    ,fetcher-account
                    ,ledger-import-boobank-import-from-date)))
     (with-current-buffer buffer
-      (message "Starting boobank for %s" fetcher-account)
+      (message "Starting woob bank for %s" fetcher-account)
       (make-process
-       :name (format "boobank %s" fetcher-account)
+       :name (format "woob bank %s" fetcher-account)
        :buffer buffer
        :stderr error-buffer
        :command command
@@ -310,17 +310,17 @@ ADDITIONAL-PARAMETERS is a list of strings to pass to boobank."
                      (ledger-import--fetch-boobank-error retry fetcher-account callback error-buffer additional-parameters)))))))
 
 (defun ledger-import--fetch-boobank-error (retry fetcher-account callback error-buffer additional-parameters)
-  "Throw an error if RETRY is 0 or try starting boobank again.
+  "Throw an error if RETRY is 0 or try starting woob bank again.
 
 FETCHER-ACCOUNT and CALLBACK are the same as in `ledger-import-fetch-boobank'.
 
 ERROR-BUFFER is a buffer containing an error message explaining the problem.
 
-ADDITIONAL-PARAMETERS is a list of strings to pass to boobank."
+ADDITIONAL-PARAMETERS is a list of strings to pass to woob bank."
   (if (>= retry 0)
       (ledger-import-fetch-boobank fetcher-account callback additional-parameters (1- retry))
     (pop-to-buffer-same-window error-buffer)
-    (error "There was a problem with boobank while importing %s" fetcher-account)))
+    (error "There was a problem with woob bank while importing %s" fetcher-account)))
 
 (defun ledger-import-ofx-rewrite ()
   "Apply `ledger-import-ofx-rewrite-rules' to current buffer.
@@ -390,4 +390,4 @@ guess related account names."
 (provide 'ledger-import)
 ;;; ledger-import.el ends here
 
-;; LocalWords:  boobank autosync fid ofx
+;; LocalWords: autosync fid ofx woob
